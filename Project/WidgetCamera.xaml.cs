@@ -30,7 +30,10 @@ using Windows.Media.Capture;
 using Windows.Media.MediaProperties;
 using Windows.System.Display;
 using Windows.UI.Xaml.Media.Imaging;
-
+using Microsoft.Toolkit.Uwp.Helpers;
+using Microsoft.Toolkit.Uwp.UI.Controls;
+using Windows.Storage.Streams;
+using Windows.UI.Xaml.Shapes;
 
 namespace XboxGameBarCamera
 {
@@ -73,6 +76,16 @@ namespace XboxGameBarCamera
         private bool _mirroringPreview = false;
         private bool _externalCamera = false;
 
+
+        private VideoFrame _currentVideoFrame;
+        private SoftwareBitmapSource _softwareBitmapSource;
+        private WriteableBitmap _writableBitmapSource;
+        private CameraPreview _cameraPreviewControl;
+        private Image _imageControl;
+        private TextBlock _errorMessageText;
+
+
+
         #region Constructor, lifecycle and navigation
 
         public WidgetCamera()
@@ -86,7 +99,94 @@ namespace XboxGameBarCamera
             // Useful to know when to initialize/clean up the camera
             Application.Current.Suspending += Application_Suspending;
             Application.Current.Resuming += Application_Resuming;
+
+
+
         }
+
+
+
+        // Register for FrameArrived to get real time video frames, software bitmaps. 
+        private async void CameraPreviewControl_FrameArrived(object sender, FrameEventArgs e)
+        {
+            var videoFrame = e.VideoFrame;
+            var softwareBitmap = e.VideoFrame.SoftwareBitmap;
+            var targetSoftwareBitmap = softwareBitmap;
+
+            if (softwareBitmap != null)
+            {
+                // Convert bitmap so that it can be displayed in our Image control, I believe
+                if (softwareBitmap.BitmapPixelFormat != BitmapPixelFormat.Bgra8 || softwareBitmap.BitmapAlphaMode == BitmapAlphaMode.Straight)
+                {
+                    targetSoftwareBitmap = SoftwareBitmap.Convert(softwareBitmap, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
+                }
+
+
+
+                // Crop
+                targetSoftwareBitmap = await CreateFromBitmap(targetSoftwareBitmap, iRect);
+
+
+                await _softwareBitmapSource.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+                {
+                    try
+                    {
+                            await _softwareBitmapSource.SetBitmapAsync(targetSoftwareBitmap);
+                    }
+                    catch (Exception ex)
+                    {
+                        await ErrorMessage.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                        {
+                            ErrorMessage.Text = ex.Message;
+                            //_writableBitmapSource.S
+                            //softwareBitmap.CopyToBuffer(_writableBitmapSource.PixelBuffer);
+                        });
+                    }
+                }
+
+                );
+      
+
+                //.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                //CurrentFrameImage.Source = softwareBitmap;
+            }
+        }
+
+        // Register for PreviewFailed to get failure error information.
+        private void CameraPreviewControl_PreviewFailed(object sender, PreviewFailedEventArgs e)
+        {
+            ErrorMessage.Text = e.Error;
+        }
+
+        /// <summary>
+        /// Does image cropping.
+        /// </summary>
+        /// <param name="softwareBitmap"></param>
+        /// <param name="rect"></param>
+        /// <returns></returns>
+        private async Task<SoftwareBitmap> CreateFromBitmap(SoftwareBitmap softwareBitmap, Rect rect)
+        {
+            using (InMemoryRandomAccessStream stream = new InMemoryRandomAccessStream())
+            {
+                BitmapEncoder encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.BmpEncoderId, stream);
+
+                encoder.SetSoftwareBitmap(softwareBitmap);
+
+                encoder.BitmapTransform.Bounds = new BitmapBounds()
+                {
+                    X = (uint)rect.X,
+                    Y = (uint)rect.Y,
+                    Height = (uint)rect.Height,
+                    Width = (uint)rect.Width
+                };
+
+                await encoder.FlushAsync();
+
+                BitmapDecoder decoder = await BitmapDecoder.CreateAsync(stream);
+                return await decoder.GetSoftwareBitmapAsync(softwareBitmap.BitmapPixelFormat, softwareBitmap.BitmapAlphaMode);
+            }
+        }
+
 
         private async void Application_Suspending(object sender, SuspendingEventArgs e)
         {
@@ -112,7 +212,7 @@ namespace XboxGameBarCamera
                 _displayOrientation = _displayInformation.CurrentOrientation;
                 _displayInformation.OrientationChanged += DisplayInformation_OrientationChanged;
 
-                await InitializeCameraAsync();
+                //await InitializeCameraAsync();
             }
         }
 
@@ -124,7 +224,20 @@ namespace XboxGameBarCamera
             _displayOrientation = _displayInformation.CurrentOrientation;
             _displayInformation.OrientationChanged += DisplayInformation_OrientationChanged;
 
-            await InitializeCameraAsync();
+            //await InitializeCameraAsync();
+
+            // Initialize the CameraPreview control and subscribe to the events
+            CameraPreviewControl.PreviewFailed += CameraPreviewControl_PreviewFailed;
+            await CameraPreviewControl.StartAsync();
+            CameraPreviewControl.CameraHelper.FrameArrived += CameraPreviewControl_FrameArrived;
+
+            // Create a software bitmap source and set it to the Xaml Image control source.
+            _softwareBitmapSource = new SoftwareBitmapSource();
+            CurrentFrameImage.Source = _softwareBitmapSource;
+            _writableBitmapSource = new WriteableBitmap(1920, 1080);
+            //ImageCropper.Source = _writableBitmapSource;
+
+
         }
 
         protected override async void OnNavigatingFrom(NavigatingCancelEventArgs e)
@@ -162,7 +275,7 @@ namespace XboxGameBarCamera
                     }
                     else if (!_isInitialized)
                     {
-                        await InitializeCameraAsync();
+                        //await InitializeCameraAsync();
                     }
                 }
             });
@@ -183,142 +296,16 @@ namespace XboxGameBarCamera
             }
         }
 
-        private async void GetPreviewFrameButton_Click(object sender, RoutedEventArgs e)
-        {
-            // If preview is not running, no preview frames can be acquired
-            if (!_isPreviewing) return;
 
-            if ((ShowFrameCheckBox.IsChecked == true) || (SaveFrameCheckBox.IsChecked == true))
-            {
-                await GetPreviewFrameAsSoftwareBitmapAsync();
-            }
-            else
-            {
-                await GetPreviewFrameAsD3DSurfaceAsync();
-            }
-        }
-
-        private async void MediaCapture_Failed(MediaCapture sender, MediaCaptureFailedEventArgs errorEventArgs)
-        {
-            Debug.WriteLine("MediaCapture_Failed: (0x{0:X}) {1}", errorEventArgs.Code, errorEventArgs.Message);
-
-            await CleanupCameraAsync();
-
-            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => GetPreviewFrameButton.IsEnabled = _isPreviewing);
-        }
 
         #endregion Event handlers
 
 
         #region MediaCapture methods
 
-        /// <summary>
-        /// Initializes the MediaCapture, registers events, gets camera device information for mirroring and rotating, and starts preview
-        /// </summary>
-        /// <returns></returns>
-        private async Task InitializeCameraAsync()
-        {
-            Debug.WriteLine("InitializeCameraAsync");
 
-            await _mediaCaptureLifeLock.WaitAsync();
 
-            if (_mediaCapture == null)
-            {
-                // Attempt to get the back camera if one is available, but use any camera device if not
-                var cameraDevice = await FindCameraDeviceByPanelAsync(Windows.Devices.Enumeration.Panel.Back);
 
-                if (cameraDevice == null)
-                {
-                    Debug.WriteLine("No camera device found!");
-                    _mediaCaptureLifeLock.Release();
-                    return;
-                }
-
-                // Create MediaCapture and its settings
-                _mediaCapture = new MediaCapture();
-
-                // Register for a notification when something goes wrong
-                _mediaCapture.Failed += MediaCapture_Failed;
-
-                var settings = new MediaCaptureInitializationSettings { VideoDeviceId = cameraDevice.Id };
-
-                // Initialize MediaCapture
-                try
-                {
-                    await _mediaCapture.InitializeAsync(settings);
-                    _isInitialized = true;
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    Debug.WriteLine("The app was denied access to the camera");
-                }
-                finally
-                {
-                    _mediaCaptureLifeLock.Release();
-                }
-
-                // If initialization succeeded, start the preview
-                if (_isInitialized)
-                {
-                    // Figure out where the camera is located
-                    if (cameraDevice.EnclosureLocation == null || cameraDevice.EnclosureLocation.Panel == Windows.Devices.Enumeration.Panel.Unknown)
-                    {
-                        // No information on the location of the camera, assume it's an external camera, not integrated on the device
-                        _externalCamera = true;
-                    }
-                    else
-                    {
-                        // Camera is fixed on the device
-                        _externalCamera = false;
-
-                        // Only mirror the preview if the camera is on the front panel
-                        _mirroringPreview = (cameraDevice.EnclosureLocation.Panel == Windows.Devices.Enumeration.Panel.Front);
-                    }
-
-                    await StartPreviewAsync();
-
-                    var picturesLibrary = await StorageLibrary.GetLibraryAsync(KnownLibraryId.Pictures);
-                    // Fall back to the local app storage if the Pictures Library is not available
-                    _captureFolder = picturesLibrary.SaveFolder ?? ApplicationData.Current.LocalFolder;
-                }
-            }
-            else
-            {
-                _mediaCaptureLifeLock.Release();
-            }
-        }
-
-        /// <summary>
-        /// Starts the preview and adjusts it for for rotation and mirroring after making a request to keep the screen on and unlocks the UI
-        /// </summary>
-        /// <returns></returns>
-        private async Task StartPreviewAsync()
-        {
-            Debug.WriteLine("StartPreviewAsync");
-
-            // Prevent the device from sleeping while the preview is running
-            _displayRequest.RequestActive();
-
-            // Register to listen for media property changes
-            _systemMediaControls.PropertyChanged += SystemMediaControls_PropertyChanged;
-
-            // Set the preview source in the UI and mirror it if necessary
-            PreviewControl.Source = _mediaCapture;
-            PreviewControl.FlowDirection = _mirroringPreview ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
-
-            // Start the preview
-            await _mediaCapture.StartPreviewAsync();
-            _isPreviewing = true;
-
-            // Initialize the preview to the current orientation
-            if (_isPreviewing)
-            {
-                await SetPreviewRotationAsync();
-            }
-
-            // Enable / disable the button depending on the preview state
-            GetPreviewFrameButton.IsEnabled = _isPreviewing;
-        }
 
         /// <summary>
         /// Gets the current orientation of the UI in relation to the device and applies a corrective rotation to the preview
@@ -355,98 +342,17 @@ namespace XboxGameBarCamera
             // Use the dispatcher because this method is sometimes called from non-UI threads
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
-                PreviewControl.Source = null;
+                //PreviewControl.Source = null;
 
                 // Allow the device to sleep now that the preview is stopped
                 _displayRequest.RequestRelease();
 
-                GetPreviewFrameButton.IsEnabled = _isPreviewing;
+                //GetPreviewFrameButton.IsEnabled = _isPreviewing;
             });
         }
 
-        /// <summary>
-        /// Gets the current preview frame as a SoftwareBitmap, displays its properties in a TextBlock, and can optionally display the image
-        /// in the UI and/or save it to disk as a jpg
-        /// </summary>
-        /// <returns></returns>
-        private async Task GetPreviewFrameAsSoftwareBitmapAsync()
-        {
-            // Get information about the preview
-            var previewProperties = _mediaCapture.VideoDeviceController.GetMediaStreamProperties(MediaStreamType.VideoPreview) as VideoEncodingProperties;
 
-            // Create the video frame to request a SoftwareBitmap preview frame
-            var videoFrame = new VideoFrame(BitmapPixelFormat.Bgra8, (int)previewProperties.Width, (int)previewProperties.Height);
 
-            // Capture the preview frame
-            using (var currentFrame = await _mediaCapture.GetPreviewFrameAsync(videoFrame))
-            {
-                // Collect the resulting frame
-                SoftwareBitmap previewFrame = currentFrame.SoftwareBitmap;
-
-                // Show the frame information
-                FrameInfoTextBlock.Text = String.Format("{0}x{1} {2}", previewFrame.PixelWidth, previewFrame.PixelHeight, previewFrame.BitmapPixelFormat);
-
-                // Add a simple green filter effect to the SoftwareBitmap
-                if (GreenEffectCheckBox.IsChecked == true)
-                {
-                    ApplyGreenFilter(previewFrame);
-                }
-
-                // Show the frame (as is, no rotation is being applied)
-                if (ShowFrameCheckBox.IsChecked == true)
-                {
-                    // Create a SoftwareBitmapSource to display the SoftwareBitmap to the user
-                    var sbSource = new SoftwareBitmapSource();
-                    await sbSource.SetBitmapAsync(previewFrame);
-
-                    // Display it in the Image control
-                    PreviewFrameImage.Source = sbSource;
-                }
-
-                // Save the frame (as is, no rotation is being applied)
-                if (SaveFrameCheckBox.IsChecked == true)
-                {
-                    var file = await _captureFolder.CreateFileAsync("PreviewFrame.jpg", CreationCollisionOption.GenerateUniqueName);
-
-                    Debug.WriteLine("Saving preview frame to " + file.Path);
-
-                    await SaveSoftwareBitmapAsync(previewFrame, file);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the current preview frame as a Direct3DSurface and displays its properties in a TextBlock
-        /// </summary>
-        /// <returns></returns>
-        private async Task GetPreviewFrameAsD3DSurfaceAsync()
-        {
-            // Capture the preview frame as a D3D surface
-            using (var currentFrame = await _mediaCapture.GetPreviewFrameAsync())
-            {
-                // Check that the Direct3DSurface isn't null. It's possible that the device does not support getting the frame
-                // as a D3D surface
-                if (currentFrame.Direct3DSurface != null)
-                {
-                    // Collect the resulting frame
-                    var surface = currentFrame.Direct3DSurface;
-
-                    // Show the frame information
-                    FrameInfoTextBlock.Text = String.Format("{0}x{1} {2}", surface.Description.Width, surface.Description.Height, surface.Description.Format);
-                }
-                else // Fall back to software bitmap
-                {
-                    // Collect the resulting frame
-                    SoftwareBitmap previewFrame = currentFrame.SoftwareBitmap;
-
-                    // Show the frame information
-                    FrameInfoTextBlock.Text = String.Format("{0}x{1} {2}", previewFrame.PixelWidth, previewFrame.PixelHeight, previewFrame.BitmapPixelFormat);
-                }
-
-                // Clear the image
-                PreviewFrameImage.Source = null;
-            }
-        }
 
         /// <summary>
         /// Cleans up the camera resources (after stopping the preview if necessary) and unregisters from MediaCapture events
@@ -473,7 +379,7 @@ namespace XboxGameBarCamera
 
                 if (_mediaCapture != null)
                 {
-                    _mediaCapture.Failed -= MediaCapture_Failed;
+                    //_mediaCapture.Failed -= MediaCapture_Failed;
                     _mediaCapture.Dispose();
                     _mediaCapture = null;
                 }
@@ -597,5 +503,63 @@ namespace XboxGameBarCamera
 
         #endregion Helper functions 
 
+
+        Point iStartPoint = new Point(0,0);
+        Point iEndPoint = new Point(1920, 1080);
+
+        Rect iRect = new Rect(0,0,1920,1080);
+        bool iPointerDown = false;
+
+        private void CameraPreviewControl_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            iStartPoint =  e.GetCurrentPoint((UIElement)sender).Position;
+            e.Handled = true;
+            iPointerDown = true;
+        }
+
+        private void CameraPreviewControl_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            iEndPoint = e.GetCurrentPoint((UIElement)sender).Position;
+            e.Handled = true;
+            iPointerDown = false;
+
+            // Compute dimension of corresponding point in frame space
+            Point startPoint = new Point(iStartPoint.X*1920/CameraPreviewControl.ActualWidth, iStartPoint.Y * 1080 / CameraPreviewControl.ActualHeight);
+            Point endPoint = new Point(iEndPoint.X * 1920 / CameraPreviewControl.ActualWidth, iEndPoint.Y * 1080 / CameraPreviewControl.ActualHeight);
+
+            // Compute frame space cropping rectanlge
+            iRect = new Rect(startPoint, endPoint);
+            
+
+        }
+
+        private void CameraPreviewControl_PointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            if (!iPointerDown) return;
+            
+            e.Handled = true;
+
+            // Draw rectangle in control space
+            Point currentPoint = e.GetCurrentPoint((UIElement)sender).Position;
+            Rect rect = new Rect(iStartPoint, currentPoint);
+
+            //rectangle1.Fill = new SolidColorBrush(Windows.UI.Colors.Blue);
+            iRectangle.Width = rect.Width;
+            iRectangle.Height = rect.Height;
+            //iRectangle.Stroke = new SolidColorBrush(Windows.UI.Colors.Black);
+            //iRectangle.StrokeThickness = 3;
+            //rectangle1.Pos
+
+            Canvas.SetLeft(iRectangle, rect.Left);
+            Canvas.SetTop(iRectangle, rect.Top);
+
+            iRectangle.Visibility = Visibility.Visible;
+
+            // When you create a XAML element in code, you have to add
+            // it to the XAML visual tree. This example assumes you have
+            // a panel named 'layoutRoot' in your XAML file, like this:
+            // <Grid x:Name="layoutRoot>
+            //iCanvas.Children.Add(rectangle);
+        }
     }
 }
