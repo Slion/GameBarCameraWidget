@@ -9,8 +9,8 @@
 
   <Identity
     Name="XboxGameBarCamera"
-    Publisher="CN=Slions, O=Slions, L=Würzburg, S=Bavaria, C=DE"
-    Version="1.0.0.0" />
+    Publisher="CN=Slions"
+    Version="1.0.1.0" />
 
   <mp:PhoneIdentity PhoneProductId="251d9ba7-45f8-4e2c-8f3b-4909c228d82b" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
@@ -96,8 +96,6 @@
 
   <Capabilities>
     <Capability Name="internetClient" />
-    <uap:Capability Name="picturesLibrary"/>
     <DeviceCapability Name="webcam"/>
-    <DeviceCapability Name="microphone"/>
   </Capabilities>
 </Package>
