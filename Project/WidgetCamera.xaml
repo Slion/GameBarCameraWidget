@@ -29,7 +29,9 @@
                 <RowDefinition Height="5*"/>
             </Grid.RowDefinitions>
 
-            <c:CameraPreview x:Name="iCameraPreview" 
+            <c:CameraPreview 
+               x:Name="iCameraPreview" 
+               IsFrameSourceGroupButtonVisible="True"
                PointerPressed="CameraPreviewControl_PointerPressed" PointerReleased="CameraPreviewControl_PointerReleased" PointerMoved="CameraPreviewControl_PointerMoved"
                Grid.Column ="0"
                Grid.ColumnSpan ="1"

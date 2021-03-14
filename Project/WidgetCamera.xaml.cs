@@ -76,14 +76,12 @@ namespace XboxGameBarCamera
         private bool _mirroringPreview = false;
         private bool _externalCamera = false;
 
-
-        private VideoFrame _currentVideoFrame;
         private SoftwareBitmapSource _softwareBitmapSource;
-        private CameraPreview _cameraPreviewControl;
-        private Image _imageControl;
-        private TextBlock _errorMessageText;
 
 
+
+        private uint frameHeight { get { return iCameraPreview.CameraHelper.PreviewFrameSource.CurrentFormat.VideoFormat.Height; } }
+        private uint frameWidth { get { return iCameraPreview.CameraHelper.PreviewFrameSource.CurrentFormat.VideoFormat.Width; } }
 
         #region Constructor, lifecycle and navigation
 
@@ -243,6 +241,12 @@ namespace XboxGameBarCamera
             _softwareBitmapSource = new SoftwareBitmapSource();
             CurrentFrameImage.Source = _softwareBitmapSource;
             iImageCamera.Source = _softwareBitmapSource;
+            // Not working for some reason
+            //iCameraPreview.IsFrameSourceGroupButtonVisible = true;
+
+
+            //iMediaPlayElement = (MediaPlayerElement)iCameraPreview.GetTemplateChild("MediaPlayerElementControl");
+
 
         }
 
@@ -539,6 +543,8 @@ namespace XboxGameBarCamera
             iStartPoint =  e.GetCurrentPoint((UIElement)sender).Position;
             e.Handled = true;
             iPointerDown = true;
+
+            //ErrorMessage.Text = iStartPoint.ToString();
         }
 
         private void CameraPreviewControl_PointerReleased(object sender, PointerRoutedEventArgs e)
@@ -548,13 +554,25 @@ namespace XboxGameBarCamera
             iPointerDown = false;
 
             // Compute coordinates of corresponding points in frame space
-            var frameHeight = iCameraPreview.CameraHelper.PreviewFrameSource.CurrentFormat.VideoFormat.Height;
-            var frameWidth = iCameraPreview.CameraHelper.PreviewFrameSource.CurrentFormat.VideoFormat.Width;
-            Point startPoint = new Point(iStartPoint.X * frameWidth / iCameraPreview.ActualWidth, iStartPoint.Y * frameHeight / iCameraPreview.ActualHeight);
-            Point endPoint = new Point(iEndPoint.X * frameWidth / iCameraPreview.ActualWidth, iEndPoint.Y * frameHeight / iCameraPreview.ActualHeight);                       
+            // We need to take into account that the camera frame takes only a fraction of preview control, we have space right and left of the frame
+            // I guess we kind of assume that the video frame is larger than it is wide here and thus is bound by the height of the camera preview control
+            // Compute our height ratio assuming scalled video frame take the whole height of our camera preview control
+            double heightRatio = frameHeight / iCameraPreview.ActualHeight;
+            // From there we can compute how wide is the video frame in control space
+            double widthDiff = iCameraPreview.ActualWidth - (frameWidth / heightRatio);
+            // Compute width of blank spaces  left and right of our video frame, this is needed to offset our coordinates
+            double widthDiffHalf = widthDiff / 2;
+            // Compute our width ratio 
+            double widthRatio = frameWidth / (iCameraPreview.ActualWidth - widthDiff);
+
+            // Now 
+            Point startPoint = new Point((iStartPoint.X - widthDiffHalf) * widthRatio, iStartPoint.Y * heightRatio);
+            Point endPoint = new Point((iEndPoint.X - widthDiffHalf) * widthRatio, iEndPoint.Y * heightRatio);                       
 
             // Compute frame space cropping rectangle
-            iRect = new Rect(startPoint, endPoint);            
+            iRect = new Rect(startPoint, endPoint);
+
+            //ErrorMessage.Text = iEndPoint.ToString() + " - " + iRect.ToString();
         }
 
         private void CameraPreviewControl_PointerMoved(object sender, PointerRoutedEventArgs e)
@@ -578,6 +596,8 @@ namespace XboxGameBarCamera
             Canvas.SetTop(iRectangle, rect.Top);
 
             iRectangle.Visibility = Visibility.Visible;
+
+            //ErrorMessage.Text = iStartPoint.ToString() + " - " + currentPoint.ToString();
 
             // When you create a XAML element in code, you have to add
             // it to the XAML visual tree. This example assumes you have
