@@ -79,7 +79,6 @@ namespace XboxGameBarCamera
 
         private VideoFrame _currentVideoFrame;
         private SoftwareBitmapSource _softwareBitmapSource;
-        private WriteableBitmap _writableBitmapSource;
         private CameraPreview _cameraPreviewControl;
         private Image _imageControl;
         private TextBlock _errorMessageText;
@@ -121,25 +120,31 @@ namespace XboxGameBarCamera
                     targetSoftwareBitmap = SoftwareBitmap.Convert(softwareBitmap, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
                 }
 
-
-
                 // Crop
-                targetSoftwareBitmap = await CreateFromBitmap(targetSoftwareBitmap, iRect);
+                try
+                {
+                    targetSoftwareBitmap = await CreateFromBitmap(targetSoftwareBitmap, iRect);
+                }
+                catch (Exception ex)
+                {
+                    await ErrorMessage.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                    {
+                        ErrorMessage.Text = ex.Message;
+                    });
+                }
 
-
+                // Set our processed resulting image
                 await _softwareBitmapSource.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
                 {
                     try
                     {
-                            await _softwareBitmapSource.SetBitmapAsync(targetSoftwareBitmap);
+                        await _softwareBitmapSource.SetBitmapAsync(targetSoftwareBitmap);
                     }
                     catch (Exception ex)
                     {
                         await ErrorMessage.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                         {
                             ErrorMessage.Text = ex.Message;
-                            //_writableBitmapSource.S
-                            //softwareBitmap.CopyToBuffer(_writableBitmapSource.PixelBuffer);
                         });
                     }
                 }
@@ -220,6 +225,9 @@ namespace XboxGameBarCamera
         {
             widget = e.Parameter as XboxGameBarWidget;
 
+            // Hook up the settings clicked event
+            widget.SettingsClicked += Widget_SettingsClicked;
+
             // Populate orientation variables with the current state and register for future changes
             _displayOrientation = _displayInformation.CurrentOrientation;
             _displayInformation.OrientationChanged += DisplayInformation_OrientationChanged;
@@ -227,17 +235,33 @@ namespace XboxGameBarCamera
             //await InitializeCameraAsync();
 
             // Initialize the CameraPreview control and subscribe to the events
-            CameraPreviewControl.PreviewFailed += CameraPreviewControl_PreviewFailed;
-            await CameraPreviewControl.StartAsync();
-            CameraPreviewControl.CameraHelper.FrameArrived += CameraPreviewControl_FrameArrived;
+            iCameraPreview.PreviewFailed += CameraPreviewControl_PreviewFailed;
+            await iCameraPreview.StartAsync();
+            iCameraPreview.CameraHelper.FrameArrived += CameraPreviewControl_FrameArrived;
 
             // Create a software bitmap source and set it to the Xaml Image control source.
             _softwareBitmapSource = new SoftwareBitmapSource();
             CurrentFrameImage.Source = _softwareBitmapSource;
-            _writableBitmapSource = new WriteableBitmap(1920, 1080);
-            //ImageCropper.Source = _writableBitmapSource;
+            iImageCamera.Source = _softwareBitmapSource;
 
+        }
 
+        private async void Widget_SettingsClicked(XboxGameBarWidget sender, object args)
+        {
+            await iRectangle.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                // Toggle bitween settings mode and camera mode
+                if (iGridSettings.Visibility == Visibility.Visible)
+                {
+                    iGridSettings.Visibility = Visibility.Collapsed;
+                    iGridCamera.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    iGridSettings.Visibility = Visibility.Visible;
+                    iGridCamera.Visibility = Visibility.Collapsed;
+                }
+            });
         }
 
         protected override async void OnNavigatingFrom(NavigatingCancelEventArgs e)
@@ -523,14 +547,14 @@ namespace XboxGameBarCamera
             e.Handled = true;
             iPointerDown = false;
 
-            // Compute dimension of corresponding point in frame space
-            Point startPoint = new Point(iStartPoint.X*1920/CameraPreviewControl.ActualWidth, iStartPoint.Y * 1080 / CameraPreviewControl.ActualHeight);
-            Point endPoint = new Point(iEndPoint.X * 1920 / CameraPreviewControl.ActualWidth, iEndPoint.Y * 1080 / CameraPreviewControl.ActualHeight);
+            // Compute coordinates of corresponding points in frame space
+            var frameHeight = iCameraPreview.CameraHelper.PreviewFrameSource.CurrentFormat.VideoFormat.Height;
+            var frameWidth = iCameraPreview.CameraHelper.PreviewFrameSource.CurrentFormat.VideoFormat.Width;
+            Point startPoint = new Point(iStartPoint.X * frameWidth / iCameraPreview.ActualWidth, iStartPoint.Y * frameHeight / iCameraPreview.ActualHeight);
+            Point endPoint = new Point(iEndPoint.X * frameWidth / iCameraPreview.ActualWidth, iEndPoint.Y * frameHeight / iCameraPreview.ActualHeight);                       
 
-            // Compute frame space cropping rectanlge
-            iRect = new Rect(startPoint, endPoint);
-            
-
+            // Compute frame space cropping rectangle
+            iRect = new Rect(startPoint, endPoint);            
         }
 
         private void CameraPreviewControl_PointerMoved(object sender, PointerRoutedEventArgs e)
@@ -560,6 +584,12 @@ namespace XboxGameBarCamera
             // a panel named 'layoutRoot' in your XAML file, like this:
             // <Grid x:Name="layoutRoot>
             //iCanvas.Children.Add(rectangle);
+        }
+
+        private void Page_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            // As we don't bother scalling it
+            iRectangle.Visibility = Visibility.Collapsed;
         }
     }
 }

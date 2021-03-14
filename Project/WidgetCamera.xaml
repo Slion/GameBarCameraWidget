@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:c="using:Microsoft.Toolkit.Uwp.UI.Controls"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-    mc:Ignorable="d">
+    mc:Ignorable="d" SizeChanged="Page_SizeChanged">
 
     <Page.Resources>
         <Style x:Name="ErrorMessageStyle" TargetType="TextBlock">
@@ -18,47 +18,58 @@
     </Page.Resources>
     <Grid Margin="20">
 
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="50*"/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="50*"/>
-            <RowDefinition Height="45*"/>
-            <RowDefinition Height="5*"/>
-        </Grid.RowDefinitions>
+        <Grid x:Name="iGridSettings" >
 
-        <c:CameraPreview x:Name="CameraPreviewControl" 
-                                PointerPressed="CameraPreviewControl_PointerPressed" PointerReleased="CameraPreviewControl_PointerReleased" PointerMoved="CameraPreviewControl_PointerMoved"
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="50*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50*"/>
+                <RowDefinition Height="45*"/>
+                <RowDefinition Height="5*"/>
+            </Grid.RowDefinitions>
+
+            <c:CameraPreview x:Name="iCameraPreview" 
+               PointerPressed="CameraPreviewControl_PointerPressed" PointerReleased="CameraPreviewControl_PointerReleased" PointerMoved="CameraPreviewControl_PointerMoved"
                Grid.Column ="0"
                Grid.ColumnSpan ="1"
                Grid.Row ="0"
                Grid.RowSpan ="1">
-            
-        </c:CameraPreview>
 
-        <Canvas x:Name="iCanvas"
-               PointerPressed="CameraPreviewControl_PointerPressed" PointerReleased="CameraPreviewControl_PointerReleased" PointerMoved="CameraPreviewControl_PointerMoved"
+            </c:CameraPreview>
+
+            <Canvas x:Name="iCanvas"
                 Grid.Column ="0"
                Grid.ColumnSpan ="1"
                Grid.Row ="0"
-               Grid.RowSpan ="1"
-                >
-            <Rectangle x:Name="iRectangle" Visibility="Collapsed" Stroke="Red" StrokeThickness="2"/>
+               Grid.RowSpan ="1">
+                <!-- Cropping rectangle -->
+               <Rectangle x:Name="iRectangle" Visibility="Collapsed" Stroke="Red" StrokeThickness="2"/>
 
-        </Canvas>
-        
-        <TextBlock x:Name="ErrorMessage" 
-                   Grid.Column ="0"
-               Grid.ColumnSpan ="1"
-               Grid.Row ="2"
-               Grid.RowSpan ="1"
-                   Text="No error"
-                   Style="{StaticResource ErrorMessageStyle}"/>
-        <Image x:Name="CurrentFrameImage" MinWidth="300" Width="400" HorizontalAlignment="Left"
+            </Canvas>
+
+            <Image x:Name="CurrentFrameImage"
                Grid.Column ="0"
                Grid.ColumnSpan ="1"
                Grid.Row ="1"
                Grid.RowSpan ="1"></Image>
+            <TextBlock x:Name="ErrorMessage" 
+               Grid.Column ="0"
+               Grid.ColumnSpan ="1"
+               Grid.Row ="2"
+               Grid.RowSpan ="1"
+               Text="No error"
+               Style="{StaticResource ErrorMessageStyle}"/>
+
+        </Grid>
+
+        <Grid x:Name="iGridCamera" Visibility="Collapsed">
+            <Image x:Name="iImageCamera"
+               Grid.Column ="0"
+               Grid.ColumnSpan ="1"
+               Grid.Row ="1"
+               Grid.RowSpan ="1"></Image>
+        </Grid>
 
     </Grid>
 

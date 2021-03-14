@@ -52,6 +52,7 @@
               <GameBarWidget Type="Standard">
                 <HomeMenuVisible>true</HomeMenuVisible>
                 <PinningSupported>true</PinningSupported>
+                <SettingsSupported AppExtensionId="WidgetCameraSettings" />
                 <Window>
                   <Size>
                     <Height>300</Height>
