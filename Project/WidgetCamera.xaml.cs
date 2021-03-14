@@ -47,7 +47,7 @@ namespace XboxGameBarCamera
 
     public sealed partial class WidgetCamera : Page
     {
-        private XboxGameBarWidget widget = null;
+        private XboxGameBarWidget iWidget = null;
 
         // Receive notifications about rotation of the UI and apply any necessary rotation to the preview stream
         private readonly DisplayInformation _displayInformation = DisplayInformation.GetForCurrentView();
@@ -82,6 +82,7 @@ namespace XboxGameBarCamera
 
         private uint frameHeight { get { return iCameraPreview.CameraHelper.PreviewFrameSource.CurrentFormat.VideoFormat.Height; } }
         private uint frameWidth { get { return iCameraPreview.CameraHelper.PreviewFrameSource.CurrentFormat.VideoFormat.Width; } }
+
 
         #region Constructor, lifecycle and navigation
 
@@ -221,10 +222,11 @@ namespace XboxGameBarCamera
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
-            widget = e.Parameter as XboxGameBarWidget;
+            iWidget = e.Parameter as XboxGameBarWidget;
 
             // Hook up the settings clicked event
-            widget.SettingsClicked += Widget_SettingsClicked;
+            iWidget.SettingsClicked += Widget_SettingsClicked;
+            iWidget.GameBarDisplayModeChanged += Widget_GameBarDisplayModeChanged;
 
             // Populate orientation variables with the current state and register for future changes
             _displayOrientation = _displayInformation.CurrentOrientation;
@@ -250,9 +252,24 @@ namespace XboxGameBarCamera
 
         }
 
+        private async void Widget_GameBarDisplayModeChanged(XboxGameBarWidget sender, object args)
+        {
+            await iGridSettings.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                if (iWidget.GameBarDisplayMode == XboxGameBarDisplayMode.PinnedOnly)
+                {
+                    // Pinned mode switch to camera mode
+                    iGridSettings.Visibility = Visibility.Collapsed;
+                    iGridCamera.Visibility = Visibility.Visible;
+                }
+            });
+
+
+        }
+
         private async void Widget_SettingsClicked(XboxGameBarWidget sender, object args)
         {
-            await iRectangle.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            await iGridSettings.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
                 // Toggle bitween settings mode and camera mode
                 if (iGridSettings.Visibility == Visibility.Visible)
