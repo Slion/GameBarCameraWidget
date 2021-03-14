@@ -79,6 +79,13 @@ namespace XboxGameBarCamera
         private SoftwareBitmapSource _softwareBitmapSource;
 
 
+        Point iStartPoint = new Point(0, 0);
+        Point iEndPoint = new Point(1920, 1080);
+
+        Rect iRect = new Rect(0, 0, 1920, 1080);
+        bool iPointerDown = false;
+
+
 
         private uint frameHeight { get { return iCameraPreview.CameraHelper.PreviewFrameSource.CurrentFormat.VideoFormat.Height; } }
         private uint frameWidth { get { return iCameraPreview.CameraHelper.PreviewFrameSource.CurrentFormat.VideoFormat.Width; } }
@@ -220,6 +227,60 @@ namespace XboxGameBarCamera
             }
         }
 
+
+        double SettingOpacity 
+        { 
+            get 
+            {
+                var val = App.Settings["opacity"];
+                if (val!=null)
+                {
+                    return (double)val;
+                }
+                else
+                {
+                    return 50;
+                }                
+            }
+            set { App.Settings["opacity"] = value; }
+        }
+
+        bool SettingOpacityOverride
+        {
+            get
+            {
+                var val = App.Settings["opacity-override"];
+                if (val!=null)
+                {
+                    return (bool)val; 
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            set { App.Settings["opacity-override"] = value; }
+        }
+
+        Rect SettingCroppingRect
+        {
+            get
+            {
+                var rect = App.Settings["cropping-rect"];
+                if (rect == null)
+                {
+                    return new Rect(0, 0, frameWidth, frameHeight);
+                }
+                else
+                {
+                    return (Rect)rect;
+                }
+            }
+            set { App.Settings["cropping-rect"] = value; }
+        }
+
+
+
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             iWidget = e.Parameter as XboxGameBarWidget;
@@ -238,16 +299,18 @@ namespace XboxGameBarCamera
             iCameraPreview.PreviewFailed += CameraPreviewControl_PreviewFailed;
             await iCameraPreview.StartAsync();
             iCameraPreview.CameraHelper.FrameArrived += CameraPreviewControl_FrameArrived;
+            iRect = SettingCroppingRect;
+  
 
             // Create a software bitmap source and set it to the Xaml Image control source.
             _softwareBitmapSource = new SoftwareBitmapSource();
             CurrentFrameImage.Source = _softwareBitmapSource;
             iImageCamera.Source = _softwareBitmapSource;
-            // Not working for some reason
+            // Not working for some reason, could be because it not available when only one camera on your system
             //iCameraPreview.IsFrameSourceGroupButtonVisible = true;
 
-
-            //iMediaPlayElement = (MediaPlayerElement)iCameraPreview.GetTemplateChild("MediaPlayerElementControl");
+            //iSliderOpacity.Value = (double)App.Settings["opacity"];
+            //iToggleSwitchOpacity.IsOn = (bool)App.Settings["opacity-override"];
 
 
         }
@@ -261,8 +324,16 @@ namespace XboxGameBarCamera
                     // Pinned mode switch to camera mode
                     iGridSettings.Visibility = Visibility.Collapsed;
                     iGridCamera.Visibility = Visibility.Visible;
-                    // Apply requested opacity then
-                    iImageCamera.Opacity = iWidget.RequestedOpacity;
+                    if (!SettingOpacityOverride)
+                    {
+                        // Apply requested system opacity then                    
+                        iImageCamera.Opacity = iWidget.RequestedOpacity;
+                    }
+                    else 
+                    {
+                        // Apply custom widget defined opacity then
+                        iImageCamera.Opacity = SettingOpacity/100;
+                    }
                 }
                 else if (iWidget.GameBarDisplayMode == XboxGameBarDisplayMode.Foreground)
                 {
@@ -553,13 +624,6 @@ namespace XboxGameBarCamera
 
         #endregion Helper functions 
 
-
-        Point iStartPoint = new Point(0,0);
-        Point iEndPoint = new Point(1920, 1080);
-
-        Rect iRect = new Rect(0,0,1920,1080);
-        bool iPointerDown = false;
-
         private void CameraPreviewControl_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             iStartPoint =  e.GetCurrentPoint((UIElement)sender).Position;
@@ -593,6 +657,7 @@ namespace XboxGameBarCamera
 
             // Compute frame space cropping rectangle
             iRect = new Rect(startPoint, endPoint);
+            SettingCroppingRect = iRect;
 
             //ErrorMessage.Text = iEndPoint.ToString() + " - " + iRect.ToString();
         }
@@ -606,26 +671,15 @@ namespace XboxGameBarCamera
             // Draw rectangle in control space
             Point currentPoint = e.GetCurrentPoint((UIElement)sender).Position;
             Rect rect = new Rect(iStartPoint, currentPoint);
-
-            //rectangle1.Fill = new SolidColorBrush(Windows.UI.Colors.Blue);
+            //
             iRectangle.Width = rect.Width;
             iRectangle.Height = rect.Height;
-            //iRectangle.Stroke = new SolidColorBrush(Windows.UI.Colors.Black);
-            //iRectangle.StrokeThickness = 3;
-            //rectangle1.Pos
-
             Canvas.SetLeft(iRectangle, rect.Left);
             Canvas.SetTop(iRectangle, rect.Top);
 
             iRectangle.Visibility = Visibility.Visible;
 
             //ErrorMessage.Text = iStartPoint.ToString() + " - " + currentPoint.ToString();
-
-            // When you create a XAML element in code, you have to add
-            // it to the XAML visual tree. This example assumes you have
-            // a panel named 'layoutRoot' in your XAML file, like this:
-            // <Grid x:Name="layoutRoot>
-            //iCanvas.Children.Add(rectangle);
         }
 
         private void Page_SizeChanged(object sender, SizeChangedEventArgs e)

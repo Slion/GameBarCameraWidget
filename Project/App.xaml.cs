@@ -35,6 +35,17 @@ namespace XboxGameBarCamera
             this.Suspending += OnSuspending;
         }
 
+        /// <summary>
+        /// Convenient access to our settings.
+        /// </summary>
+        public static IPropertySet Settings
+        {
+            get
+            {
+                return Windows.Storage.ApplicationData.Current.LocalSettings.Values;
+            }
+        }
+
         protected override void OnActivated(IActivatedEventArgs args)
         {
             XboxGameBarWidgetActivatedEventArgs widgetArgs = null;
