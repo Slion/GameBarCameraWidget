@@ -9,14 +9,14 @@
 
   <Identity
     Name="XboxGameBarCamera"
-    Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
+    Publisher="CN=Slions, O=Slions, L=Würzburg, S=Bavaria, C=DE"
     Version="1.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="251d9ba7-45f8-4e2c-8f3b-4909c228d82b" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>XboxGameBarCamera</DisplayName>
-    <PublisherDisplayName>andavis</PublisherDisplayName>
+    <DisplayName>Xbox Game Bar Camera</DisplayName>
+    <PublisherDisplayName>Slions</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
