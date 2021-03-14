@@ -30,6 +30,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="50*"/>
                 <RowDefinition Height="50*"/>
+                <RowDefinition Height="30"/>
             </Grid.RowDefinitions>
 
             <c:CameraPreview 
@@ -75,11 +76,18 @@
                         HorizontalAlignment="Stretch" 
                         Value="{x:Bind SettingOpacity, Mode=TwoWay}"/>
 
-                <TextBlock x:Name="ErrorMessage" 
-               Text="No error"
-               Style="{StaticResource ErrorMessageStyle}"/>
-
             </StackPanel>
+
+            <TextBlock x:Name="ErrorMessage" 
+                Grid.Column ="0"
+                Grid.ColumnSpan ="2"
+                Grid.Row ="2"
+                Grid.RowSpan ="1"
+               Text="All good"
+               VerticalAlignment="Center"
+                       MaxLines="2"
+                       TextWrapping="Wrap"
+               Style="{StaticResource ErrorMessageStyle}"/>
 
         </Grid>
 
