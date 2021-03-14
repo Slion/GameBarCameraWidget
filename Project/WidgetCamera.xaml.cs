@@ -261,10 +261,15 @@ namespace XboxGameBarCamera
                     // Pinned mode switch to camera mode
                     iGridSettings.Visibility = Visibility.Collapsed;
                     iGridCamera.Visibility = Visibility.Visible;
+                    // Apply requested opacity then
+                    iImageCamera.Opacity = iWidget.RequestedOpacity;
+                }
+                else if (iWidget.GameBarDisplayMode == XboxGameBarDisplayMode.Foreground)
+                {
+                    // No opacity in Game Bar Foreground mode
+                    iImageCamera.Opacity = 1.0;
                 }
             });
-
-
         }
 
         private async void Widget_SettingsClicked(XboxGameBarWidget sender, object args)
