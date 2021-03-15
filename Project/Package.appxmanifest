@@ -8,11 +8,11 @@
   IgnorableNamespaces="uap uap3 mp">
 
   <Identity
-    Name="XboxGameBarCamera"
-    Publisher="CN=Slions"
-    Version="1.0.1.0" />
+    Name="59798Slions.XboxGameBarCamera"
+    Publisher="CN=9FC06160-8082-460D-AC59-6C1ADD10E907"
+    Version="1.0.4.0" />
 
-  <mp:PhoneIdentity PhoneProductId="251d9ba7-45f8-4e2c-8f3b-4909c228d82b" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="5f3d345a-befa-4d1a-971c-bf33ae8a6fec" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>Xbox Game Bar Camera</DisplayName>
