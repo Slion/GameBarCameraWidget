@@ -10,7 +10,7 @@
   <Identity
     Name="59798Slions.XboxGameBarCamera"
     Publisher="CN=9FC06160-8082-460D-AC59-6C1ADD10E907"
-    Version="1.0.4.0" />
+    Version="1.0.6.0" />
 
   <mp:PhoneIdentity PhoneProductId="5f3d345a-befa-4d1a-971c-bf33ae8a6fec" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
@@ -95,7 +95,6 @@
   </Extensions>
 
   <Capabilities>
-    <Capability Name="internetClient" />
     <DeviceCapability Name="webcam"/>
   </Capabilities>
 </Package>
