@@ -53,7 +53,7 @@
                 <Rectangle x:Name="iRectangle" Visibility="Collapsed" Stroke="Red" StrokeThickness="2"/>
             </Canvas>
 
-            <Image x:Name="CurrentFrameImage"
+            <Image x:Name="iImageCameraPreview"
                Grid.Column ="1"
                Grid.ColumnSpan ="1"
                Grid.Row ="1"
@@ -75,6 +75,13 @@
                     IsEnabled="{x:Bind iToggleSwitchOpacity.IsOn, Mode=OneWay}"
                         HorizontalAlignment="Stretch" 
                         Value="{x:Bind SettingOpacity, Mode=TwoWay}"/>
+
+                <ComboBox Header="Horizontal alignment:" PlaceholderText="Pick alignment"
+                          SelectedValue="{x:Bind SettingHorizontalAlignmentString, Mode=TwoWay}">
+                    <x:String>Left</x:String>
+                    <x:String>Center</x:String>
+                    <x:String>Right</x:String>
+                </ComboBox>
 
             </StackPanel>
 

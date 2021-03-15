@@ -280,6 +280,42 @@ namespace XboxGameBarCamera
         }
 
 
+        string SettingHorizontalAlignmentString
+        {
+            get
+            {
+                var val = App.Settings["halign"];
+                if (val != null)
+                {
+                    return (string)val;
+                }
+                else
+                {
+                    return "Center";
+                }
+            }
+            set 
+            { 
+                App.Settings["halign"] = value;
+                iImageCamera.HorizontalAlignment = Enum.Parse<HorizontalAlignment>(value);
+                iImageCameraPreview.HorizontalAlignment = Enum.Parse<HorizontalAlignment>(value);
+            }
+        }
+
+        HorizontalAlignment SettingHorizontalAlignment
+        {
+            get
+            {
+                return Enum.Parse<HorizontalAlignment>(SettingHorizontalAlignmentString);
+            }
+            set 
+            {               
+                SettingHorizontalAlignmentString = value.ToString();
+            }
+        }
+
+
+
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -304,7 +340,7 @@ namespace XboxGameBarCamera
 
             // Create a software bitmap source and set it to the Xaml Image control source.
             _softwareBitmapSource = new SoftwareBitmapSource();
-            CurrentFrameImage.Source = _softwareBitmapSource;
+            iImageCameraPreview.Source = _softwareBitmapSource;
             iImageCamera.Source = _softwareBitmapSource;
             // Not working for some reason, could be because it not available when only one camera on your system
             //iCameraPreview.IsFrameSourceGroupButtonVisible = true;
@@ -340,6 +376,9 @@ namespace XboxGameBarCamera
                     // No opacity in Game Bar Foreground mode
                     iImageCamera.Opacity = 1.0;
                 }
+
+                iImageCamera.HorizontalAlignment = SettingHorizontalAlignment;
+                iImageCameraPreview.HorizontalAlignment = SettingHorizontalAlignment;
             });
         }
 
