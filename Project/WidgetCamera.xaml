@@ -85,7 +85,7 @@
 
             </StackPanel>
 
-            <TextBlock x:Name="ErrorMessage" 
+            <TextBlock x:Name="iErrorMessage" 
                 Grid.Column ="0"
                 Grid.ColumnSpan ="2"
                 Grid.Row ="2"
