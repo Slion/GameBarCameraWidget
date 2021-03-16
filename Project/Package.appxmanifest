@@ -15,7 +15,7 @@
   <mp:PhoneIdentity PhoneProductId="5f3d345a-befa-4d1a-971c-bf33ae8a6fec" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>Xbox Game Bar Camera</DisplayName>
+    <DisplayName>Camera for Xbox Game Bar</DisplayName>
     <PublisherDisplayName>Slions</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -36,7 +36,7 @@
         DisplayName="Camera for Xbox Game Bar"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png"
-        Description="Display cropped camera output in an Xbox Game Bar widget."
+        Description="Display camera output in an Xbox Game Bar widget."
         BackgroundColor="transparent">
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" Square71x71Logo="Assets\SmallTile.png" Square310x310Logo="Assets\LargeTile.png"/>
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
@@ -44,7 +44,7 @@
       <Extensions>
         <uap3:Extension Category="windows.appExtension">
           <uap3:AppExtension Name="microsoft.gameBarUIExtension"
-                             Id="Widget1"
+                             Id="WidgetCamera"
                              DisplayName="Camera"
                              Description="Camera widget for Xbox Game Bar"
                              PublicFolder="GameBar">

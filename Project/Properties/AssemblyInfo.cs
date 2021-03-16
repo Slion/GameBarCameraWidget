@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("XboxGameBarCamera")]
+[assembly: AssemblyTitle("GameBarCameraWidget")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Slions")]
-[assembly: AssemblyProduct("Xbox Game Bar Camera")]
+[assembly: AssemblyProduct("")]
 [assembly: AssemblyCopyright("Stéphane Lenclud, Copyright ©  2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
