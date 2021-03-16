@@ -325,6 +325,40 @@ namespace XboxGameBarCamera
         }
 
 
+        string SettingVerticalAlignmentString
+        {
+            get
+            {
+                var val = App.Settings["valign"];
+                if (val != null)
+                {
+                    return (string)val;
+                }
+                else
+                {
+                    return "Center";
+                }
+            }
+            set
+            {
+                App.Settings["valign"] = value;
+                iImageCamera.VerticalAlignment = Enum.Parse<VerticalAlignment>(value);
+                iImageCameraPreview.VerticalAlignment = Enum.Parse<VerticalAlignment>(value);
+            }
+        }
+
+        VerticalAlignment SettingVerticalAlignment
+        {
+            get
+            {
+                return Enum.Parse<VerticalAlignment>(SettingVerticalAlignmentString);
+            }
+            set
+            {
+                SettingVerticalAlignmentString = value.ToString();
+            }
+        }
+
 
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -399,6 +433,8 @@ namespace XboxGameBarCamera
         {            
             iImageCamera.HorizontalAlignment = SettingHorizontalAlignment;
             iImageCameraPreview.HorizontalAlignment = SettingHorizontalAlignment;
+            iImageCamera.VerticalAlignment = SettingVerticalAlignment;
+            iImageCameraPreview.VerticalAlignment = SettingVerticalAlignment;
             iImageCamera.InvalidateArrange();
             iImageCameraPreview.InvalidateArrange();
         }

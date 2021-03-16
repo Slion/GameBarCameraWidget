@@ -83,6 +83,13 @@
                     <x:String>Right</x:String>
                 </ComboBox>
 
+                <ComboBox Header="Vertical alignment:" PlaceholderText="Pick alignment"
+                          SelectedValue="{x:Bind SettingVerticalAlignmentString, Mode=TwoWay}">
+                    <x:String>Top</x:String>
+                    <x:String>Center</x:String>
+                    <x:String>Bottom</x:String>
+                </ComboBox>
+
             </StackPanel>
 
             <TextBlock x:Name="iErrorMessage" 
