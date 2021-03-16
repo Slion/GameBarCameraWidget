@@ -105,14 +105,14 @@ namespace XboxGameBarCamera
                 }
                 catch (Exception ex)
                 {
-                    await iErrorMessage.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                     {
                         iErrorMessage.Text = ex.Message;
                     });
                 }
 
                 // Set our processed resulting image
-                await iSoftwareBitmapSource.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
                 {
                     try
                     {
@@ -126,7 +126,7 @@ namespace XboxGameBarCamera
                     }
                     catch (Exception ex)
                     {
-                        await iErrorMessage.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                        await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                         {
                             iErrorMessage.Text = ex.Message;
                         });
@@ -144,7 +144,7 @@ namespace XboxGameBarCamera
         // Register for PreviewFailed to get failure error information.
         private async void CameraPreviewControl_PreviewFailed(object sender, PreviewFailedEventArgs e)
         {
-            await iErrorMessage.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
                 iErrorMessage.Text = e.Error;
             });            
@@ -189,7 +189,7 @@ namespace XboxGameBarCamera
 
                 deferral.Complete();
 
-                await iErrorMessage.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                 {
                     iErrorMessage.Text = "Application suspending";
                 });
@@ -209,7 +209,7 @@ namespace XboxGameBarCamera
 
                 //await InitializeCameraAsync();
 
-                await iErrorMessage.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                 {
                     iErrorMessage.Text = "Application resuming";
                 });
@@ -222,7 +222,7 @@ namespace XboxGameBarCamera
 
         private async void AppLeavingBackground(object sender, LeavingBackgroundEventArgs e)
         {
-            await iErrorMessage.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
                 iErrorMessage.Text = "Application leaving background";
             });
@@ -230,7 +230,7 @@ namespace XboxGameBarCamera
 
         private async void AppEnteredBackground(object sender, EnteredBackgroundEventArgs e)
         {
-            await iErrorMessage.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
                 iErrorMessage.Text = "Application entered background";
             });
@@ -369,6 +369,7 @@ namespace XboxGameBarCamera
             iWidget.SettingsClicked += Widget_SettingsClicked;
             iWidget.GameBarDisplayModeChanged += Widget_GameBarDisplayModeChanged;
             iWidget.VisibleChanged += Widget_VisibleChanged;
+            iWidget.RequestedThemeChanged += Widget_RequestedThemeChanged;
 
             // Create a software bitmap source and set it to the Xaml Image control source.
             iSoftwareBitmapSource = new SoftwareBitmapSource();
@@ -379,9 +380,17 @@ namespace XboxGameBarCamera
 
         }
 
+        private async void Widget_RequestedThemeChanged(XboxGameBarWidget sender, object args)
+        {
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                RequestedTheme = iWidget.RequestedTheme;
+            });
+        }
+
         private async void Widget_VisibleChanged(XboxGameBarWidget sender, object args)
         {
-            await iCameraPreview.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
             {
                 if (iWidget.Visible)
                 {
@@ -442,7 +451,7 @@ namespace XboxGameBarCamera
 
         private async void Widget_GameBarDisplayModeChanged(XboxGameBarWidget sender, object args)
         {
-            await iGridSettings.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
                 if (iWidget.GameBarDisplayMode == XboxGameBarDisplayMode.PinnedOnly)
                 {
@@ -472,7 +481,7 @@ namespace XboxGameBarCamera
 
         private async void Widget_SettingsClicked(XboxGameBarWidget sender, object args)
         {
-            await iGridSettings.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
                 // Toggle bitween settings mode and camera mode
                 if (iGridSettings.Visibility == Visibility.Visible)
