@@ -37,16 +37,16 @@
                x:Name="iCameraPreview" 
                IsFrameSourceGroupButtonVisible="True"
                PointerPressed="CameraPreviewControl_PointerPressed" PointerReleased="CameraPreviewControl_PointerReleased" PointerMoved="CameraPreviewControl_PointerMoved"
-               Grid.Column ="0"
-               Grid.ColumnSpan ="2"
+               Grid.Column ="1"
+               Grid.ColumnSpan ="1"
                Grid.Row ="0"
                Grid.RowSpan ="1">
 
             </c:CameraPreview>
 
             <Canvas x:Name="iCanvas"
-                Grid.Column ="0"
-               Grid.ColumnSpan ="2"
+                Grid.Column ="1"
+               Grid.ColumnSpan ="1"
                Grid.Row ="0"
                Grid.RowSpan ="1">
                 <!-- Cropping rectangle -->
@@ -63,8 +63,8 @@
                         Margin="10"
                 Grid.Column ="0"
                 Grid.ColumnSpan ="1"
-                Grid.Row ="1"
-                Grid.RowSpan ="1">
+                Grid.Row ="0"
+                Grid.RowSpan ="2">
 
                 <ToggleSwitch x:Name="iToggleSwitchOpacity"
                               IsOn="{x:Bind SettingOpacityOverride, Mode=TwoWay}" 
@@ -73,10 +73,12 @@
 
                 <Slider x:Name="iSliderOpacity" Header="Opacity"
                     IsEnabled="{x:Bind iToggleSwitchOpacity.IsOn, Mode=OneWay}"
-                        HorizontalAlignment="Stretch" 
+                        HorizontalAlignment="Stretch"
                         Value="{x:Bind SettingOpacity, Mode=TwoWay}"/>
 
                 <ComboBox Header="Horizontal alignment:" PlaceholderText="Pick alignment"
+                          HorizontalAlignment="Stretch"
+                          Margin="0 5 0 0"
                           SelectedValue="{x:Bind SettingHorizontalAlignmentString, Mode=TwoWay}">
                     <x:String>Left</x:String>
                     <x:String>Center</x:String>
@@ -84,6 +86,8 @@
                 </ComboBox>
 
                 <ComboBox Header="Vertical alignment:" PlaceholderText="Pick alignment"
+                          HorizontalAlignment="Stretch"
+                          Margin="0 5 0 0"
                           SelectedValue="{x:Bind SettingVerticalAlignmentString, Mode=TwoWay}">
                     <x:String>Top</x:String>
                     <x:String>Center</x:String>
