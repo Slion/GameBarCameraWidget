@@ -10,7 +10,7 @@
   <Identity
     Name="59798Slions.GameBarCameraWidget"
     Publisher="CN=9FC06160-8082-460D-AC59-6C1ADD10E907"
-    Version="1.0.14.0" />
+    Version="1.0.15.0" />
 
   <mp:PhoneIdentity PhoneProductId="59f9c769-09ee-44d0-995a-a879b7010eb0" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
