@@ -7,8 +7,8 @@
     <ProjectGuid>{CF9951F6-A12F-4403-B121-22880DC917FB}</ProjectGuid>
     <OutputType>AppContainerExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>XboxGameBarCamera</RootNamespace>
-    <AssemblyName>XboxGameBarCamera</AssemblyName>
+    <RootNamespace>GameBarCameraWidget</RootNamespace>
+    <AssemblyName>GameBarCameraWidget</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.18362.0</TargetPlatformVersion>

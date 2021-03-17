@@ -8,14 +8,14 @@
   IgnorableNamespaces="uap uap3 mp">
 
   <Identity
-    Name="59798Slions.XboxGameBarCamera"
+    Name="59798Slions.GameBarCameraWidget"
     Publisher="CN=9FC06160-8082-460D-AC59-6C1ADD10E907"
-    Version="1.0.11.0" />
+    Version="1.0.14.0" />
 
-  <mp:PhoneIdentity PhoneProductId="5f3d345a-befa-4d1a-971c-bf33ae8a6fec" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="59f9c769-09ee-44d0-995a-a879b7010eb0" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>Xbox Game Bar Camera</DisplayName>
+    <DisplayName>Game Bar Camera Widget</DisplayName>
     <PublisherDisplayName>Slions</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -30,10 +30,10 @@
 
   <Applications>
     <Application Id="App"
-      Executable="$targetnametoken$.exe" EntryPoint="XboxGameBarCamera.App">
+      Executable="$targetnametoken$.exe" EntryPoint="GameBarCameraWidget.App">
       <uap:VisualElements
         AppListEntry="none"
-        DisplayName="Xbox Game Bar Camera"
+        DisplayName="Game Bar Camera Widget"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png"
         Description="Display camera output in an Xbox Game Bar widget."
