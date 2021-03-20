@@ -361,10 +361,11 @@
     <Language Code="zu-za" InMinimumRequirementSet="true" />
   </SupportedLocales>
   <ProductReservedInfo>
-    <MainPackageIdentityName>59798Slions.GameBarCameraWidget</MainPackageIdentityName>
+    <MainPackageIdentityName>59798Slions.CameraWidgetforGameBar</MainPackageIdentityName>
     <ReservedNames>
-      <ReservedName>Game Bar Camera Widget</ReservedName>
+      <ReservedName>Camera Widget for Game Bar</ReservedName>
     </ReservedNames>
   </ProductReservedInfo>
-  <PackageInfoList LandingUrl="https://developer.microsoft.com/dashboard/Application?appId=9P2X7FR6KDQT" />
+
+  <PackageInfoList LandingUrl="https://developer.microsoft.com/dashboard/Application?appId=9MZZNMHPJ645" />
 </StoreAssociation>
